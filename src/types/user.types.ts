@@ -10,4 +10,5 @@ export type RegisterForm = Pick<User, 'name' | 'lastname' | 'email' | 'nickname'
     password_confirmation: string;
 }
 
+export type LoginForm = Pick<User, 'email'> & { password: string };
 

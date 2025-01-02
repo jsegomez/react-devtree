@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import ErrorMessage from "../components/ErrorMessage";
+import { isAxiosError } from "axios";
+
 import { RegisterForm } from "../types/user.types";
-import axios, { isAxiosError } from "axios";
 import { UserRegistrationResponse } from "../types/user-registration-response.interface";
+import ErrorMessage from "../components/ErrorMessage";
+import api from "../utils/axios";
 
 const RegisterView = () => {
     const navigate = useNavigate();
@@ -24,22 +27,22 @@ const RegisterView = () => {
 
     const handleRegister = async(dataForm: RegisterForm) => {        
         try {
-            await axios.post<UserRegistrationResponse>(`${import.meta.env.VITE_API_URL}/auth/register`, dataForm);
+            await api.post<UserRegistrationResponse>('/auth/register', dataForm);
             handleSuccessResponse();
         } catch (error: any) {
-            if(isAxiosError(error)) console.log(error.response?.data);
+            if(isAxiosError(error)) toast.error(error.response?.data.message);
         }
     }
 
     const handleSuccessResponse = () => {
         reset();
+        toast.success('Usuario registrado exitosamente');
         navigate('/auth/login');
     }
 
     return (
         <>
-            <h1 className="text-4xl text-white text-center font-bold">Crear cuenta</h1>
-
+            <h1 className="text-4xl text-white text-center font-bold">Crear cuenta</h1>            
             <form
                 onSubmit={handleSubmit(handleRegister)}
                 className="bg-white px-5 py-20 rounded-lg space-y-10 mt-10"
