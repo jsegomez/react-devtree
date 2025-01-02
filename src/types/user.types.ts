@@ -1,10 +1,11 @@
 export type User = {
     name: string;
+    lastname: string;
     email: string;
-    handle: string;
+    nickname: string;
 }
 
-export type RegisterForm = Pick<User, 'name' | 'email' | 'handle'> & {
+export type RegisterForm = Pick<User, 'name' | 'lastname' | 'email' | 'nickname'> & {
     password: string;
     password_confirmation: string;
 }

@@ -1,25 +1,39 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import ErrorMessage from "../components/ErrorMessage";
 import { RegisterForm } from "../types/user.types";
+import axios, { isAxiosError } from "axios";
+import { UserRegistrationResponse } from "../types/user-registration-response.interface";
 
 const RegisterView = () => {
+    const navigate = useNavigate();
     const initialValues: RegisterForm = {
         name: '',
+        lastname: '',
         email: '',
-        handle: '',
+        nickname: '',
         password: '',
         password_confirmation: ''
     }
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>({
+    const { register, handleSubmit, watch, reset,formState: { errors } } = useForm<RegisterForm>({
         defaultValues: initialValues
     });
 
     const watchName = watch('password');
 
-    const onSubmit = (data: RegisterForm) => {
-        console.log(data);
+    const handleRegister = async(dataForm: RegisterForm) => {        
+        try {
+            await axios.post<UserRegistrationResponse>(`${import.meta.env.VITE_API_URL}/auth/register`, dataForm);
+            handleSuccessResponse();
+        } catch (error: any) {
+            if(isAxiosError(error)) console.log(error.response?.data);
+        }
+    }
+
+    const handleSuccessResponse = () => {
+        reset();
+        navigate('/auth/login');
     }
 
     return (
@@ -27,7 +41,7 @@ const RegisterView = () => {
             <h1 className="text-4xl text-white text-center font-bold">Crear cuenta</h1>
 
             <form
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(handleRegister)}
                 className="bg-white px-5 py-20 rounded-lg space-y-10 mt-10"
             >
                 <div className="grid grid-cols-1 space-y-3">
@@ -49,6 +63,24 @@ const RegisterView = () => {
                     {errors.name && <ErrorMessage>{String(errors.name.message)}</ErrorMessage>}
                 </div>
                 <div className="grid grid-cols-1 space-y-3">
+                    <label htmlFor="lastname" className="text-2xl text-slate-500">Apellidos</label>
+                    <input
+                        id="lastname"
+                        type="text"
+                        placeholder="Apellidos"
+                        className="bg-slate-100 border-none p-3 rounded-lg placeholder-slate-400"
+                        { ...register('lastname',
+                            {
+                                required: 'Apellidos requeridos',
+                                minLength: { value: 3, message: 'El nombre debe tener al menos 3 caracteres' },
+                                maxLength: { value: 50, message: 'El nombre debe tener menos de 50 caracteres' },
+                                pattern: { value: /^\s*[a-zA-Z]+(?: [a-zA-Z]+)*\s*$/, message: 'Apellidos deben contener solo letras' }
+                            })
+                        }
+                    />
+                    {errors.lastname && <ErrorMessage>{String(errors.lastname.message)}</ErrorMessage>}
+                </div>
+                <div className="grid grid-cols-1 space-y-3">
                     <label htmlFor="email" className="text-2xl text-slate-500">E-mail</label>
                     <input
                         id="email"
@@ -65,19 +97,19 @@ const RegisterView = () => {
                     {errors.email && <ErrorMessage>{String(errors.email.message)}</ErrorMessage>}
                 </div>
                 <div className="grid grid-cols-1 space-y-3">
-                    <label htmlFor="handle" className="text-2xl text-slate-500">Handle</label>
+                    <label htmlFor="nickname" className="text-2xl text-slate-500">Nickname</label>
                     <input
-                        id="handle"
+                        id="nickname"
                         type="text"
                         placeholder="Nombre de usuario: sin espacios"
                         className="bg-slate-100 border-none p-3 rounded-lg placeholder-slate-400"
-                        {...register('handle', {
+                        {...register('nickname', {
                             required: 'El handle es requerido',
                             minLength: { value: 6, message: 'Tu handle debe tener al menos 6 caracteres' },
                             maxLength: { value: 50, message: 'Tu handle debe tener tener menos de 50 caracteres' },                            
                         })}
                     />
-                    {errors.handle && <ErrorMessage>{String(errors.handle.message)}</ErrorMessage>}
+                    {errors.nickname && <ErrorMessage>{String(errors.nickname.message)}</ErrorMessage>}
                 </div>
                 <div className="grid grid-cols-1 space-y-3">
                     <label htmlFor="password" className="text-2xl text-slate-500">Password</label>
