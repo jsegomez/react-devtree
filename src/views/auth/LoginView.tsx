@@ -1,28 +1,42 @@
 import { isAxiosError } from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 
-import api from "../utils/axios";
-import ErrorMessage from "../components/ErrorMessage";
-import { LoginForm } from "../types/user.types";
+import api from "../../utils/axios";
+import ErrorMessage from "../../components/ErrorMessage";
+import { LoginForm } from "../../types/user.types";
+import { useState } from "react";
 
 const LoginView = () => {
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+
     const defaultValues: LoginForm = {
-        email: '',
-        password: ''
+        email: 'jsegomez@gmail.com',
+        password: 'Gnome$9900'
     }
     
-    const { register, handleSubmit, reset, formState: { errors } } = useForm({ defaultValues });
+    const { register, handleSubmit, reset: resetLoginForm, formState: { errors } } = useForm({ defaultValues });
 
     const handleLogin = async(dataForm: LoginForm) => {        
+        setIsLoading(true);
         try {
-            await api.post('/auth/login', dataForm);            
-            reset();
-            toast.success('Usuario logueado exitosamente');
+            const { data } = await api.post('/auth/login', dataForm);     
+            handleLoginSuccess(data);
         } catch (error: any) {
             if(isAxiosError(error)) toast.error(error.response?.data.message);
         }
+    }
+
+    const handleLoginSuccess = (data: any) => {
+        resetLoginForm();
+        sessionStorage.setItem('token', data.token);        
+        setIsLoading(false);
+        navigate('/admin');
+        setTimeout(() => {
+            toast.success('Sesión iniciada satisfactoriamente');
+        }, 100);
     }
 
     return (
@@ -67,7 +81,8 @@ const LoginView = () => {
 
                 <input
                     type="submit"
-                    className="bg-cyan-400 p-3 text-lg w-full uppercase text-slate-600 rounded-lg font-bold cursor-pointer"
+                    disabled={isLoading}
+                    className={`p-3 text-lg w-full uppercase text-slate-600 rounded-lg font-bold cursor-pointer ${isLoading ? 'bg-slate-400' : 'bg-cyan-400'}`}
                     value='Iniciar sesión'
                 />
             </form>

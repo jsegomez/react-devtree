@@ -3,10 +3,10 @@ import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { isAxiosError } from "axios";
 
-import { RegisterForm } from "../types/user.types";
-import { UserRegistrationResponse } from "../types/user-registration-response.interface";
-import ErrorMessage from "../components/ErrorMessage";
-import api from "../utils/axios";
+import { RegisterForm } from "../../types/user.types";
+import { UserRegistrationResponse } from "../../types/user-registration-response.interface";
+import ErrorMessage from "../../components/ErrorMessage";
+import api from "../../utils/axios";
 
 const RegisterView = () => {
     const navigate = useNavigate();
