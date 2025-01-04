@@ -2,6 +2,9 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import NavigationTabs from "../components/NavigationTabs";
 
+import { getUser } from "../api/DevTreeAPI";
+import { useQuery } from "@tanstack/react-query";
+
 export default function AppLayout() {
     const navigate = useNavigate();
 
@@ -9,6 +12,20 @@ export default function AppLayout() {
         sessionStorage.removeItem('token');
         navigate('/auth/login');
     }
+
+
+    const { data, isLoading, isError, error } = useQuery({        
+        queryFn: () => getUser(),
+        queryKey: ['data-user'],
+        retry: 1,
+        refetchOnWindowFocus: false,
+    })
+
+    console.log(data)
+    console.log(`isLoading: ${isLoading}`)
+    console.log(`isError: ${isError}`)
+    console.log(`error: ${error}`)
+
     
     return (
         <>
