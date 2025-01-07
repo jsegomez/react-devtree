@@ -22,7 +22,7 @@ const LoginView = () => {
     const handleLogin = async(dataForm: LoginForm) => {        
         setIsLoading(true);
         try {
-            const { data } = await api.post('/auth/login', dataForm);     
+            const { data } = await api.post('/auth/login', dataForm);   
             handleLoginSuccess(data);
         } catch (error: any) {
             if(isAxiosError(error)) toast.error(error.response?.data.message);
