@@ -13,7 +13,7 @@ const LoginView = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const defaultValues: LoginForm = {
-        email: 'jsegomez@gmail.com',
+        email: 'jsegomez06@gmail.com',
         password: 'Gnome$9900'
     }
     
@@ -25,7 +25,10 @@ const LoginView = () => {
             const { data } = await api.post('/auth/login', dataForm);   
             handleLoginSuccess(data);
         } catch (error: any) {
-            if(isAxiosError(error)) toast.error(error.response?.data.message);
+            if(isAxiosError(error)) {
+                toast.error(error.response?.data.message);
+                setIsLoading(false);
+            };
         }
     }
 

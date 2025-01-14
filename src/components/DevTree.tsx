@@ -48,7 +48,9 @@ export default function DevTree({data}:{data:User}) {
                             <Outlet />
                         </div>
                         <div className="w-full md:w-96 bg-slate-800 px-5 py-10 space-y-6">
-
+                            <p className="text-4xl text-center text-white">{data.nickname}</p>
+                            { data.image && <img src={data.image} className="mx-auto max-w-[250px] max-h-[330px]" alt="profile-image" /> }
+                            <p className="text-center text-white text-lg font-bold">{data.description}</p>
                         </div>
                     </div>
                 </main>

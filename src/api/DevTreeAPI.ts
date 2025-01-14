@@ -32,4 +32,23 @@ export const updateUser = async(formData: ProfileForm):Promise<User> => {
     }    
 }
 
+export const uploadImage = async(file: File):Promise<User> => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file); 
+
+        const { data } = await api.post<User>('/user/set-image', formData);
+        return data;
+    } catch (error) {
+        if(error instanceof AxiosError && error.response?.status === 409) {
+            toast.error(error.response.data.message);
+        }
+        if(isAxiosError(error)) {
+            throw new Error(error.response?.data.message);
+        }else{
+            throw new Error("An unknown error occurred");
+        }
+    }   
+}
+
 

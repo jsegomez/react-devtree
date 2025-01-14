@@ -2,26 +2,42 @@ import { useForm } from "react-hook-form"
 import ErrorMessage from "../components/ErrorMessage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ProfileForm, User } from "../types/user.types";
-import { updateUser } from "../api/DevTreeAPI";
+import { uploadImage, updateUser } from "../api/DevTreeAPI";
 import { toast } from "sonner";
 
 export default function ProfileView() {
     const queryClient = useQueryClient();
-    const data: User = queryClient.getQueryData(['data-user'])!;
+    const data: User = queryClient.getQueryData(['data-user'])!;    
 
-    const { register, reset: resetForm, handleSubmit, formState: { errors, isValid, isDirty } } = useForm<ProfileForm>({
+    const { register, reset: resetForm,handleSubmit, formState: { errors, isValid, isDirty } } = useForm<ProfileForm>({
         defaultValues: {
             nickname: data?.nickname,
-            description: data?.description
+            description: data?.description,
+            image: data?.image || ''
         }
     });
 
     const updateProfileMutation = useMutation({
         mutationFn: updateUser,
         onError: (error: Error) => {
-            console.log(error)
+            toast.error(error.message);
         },
         onSuccess: (data) => handleSuccessResponse(data)
+    });
+
+    const uploadImageMutation = useMutation({
+        mutationFn: uploadImage,
+        onError: (error: Error) => {
+            toast.error(error.message);
+        },
+        onSuccess: (data) => {
+            queryClient.setQueryData(['data-user'], (prevData: User) => {
+                return {
+                    ...prevData,
+                    image: data.image
+                };
+            });
+        }
     });
 
     const handleSuccessResponse = (data: User) => {
@@ -30,12 +46,20 @@ export default function ProfileView() {
 
         resetForm({
             nickname: data.nickname,
-            description: data.description
+            description: data.description,
+            image: data.image
         });
     }
 
     const onSubmit = (formData: ProfileForm) => {
         updateProfileMutation.mutate(formData);
+    }
+
+    const setNewImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if(event.target.files) {
+            const file = event.target.files[0];                       
+            uploadImageMutation.mutate(file);
+        }
     }
 
     return (
@@ -85,16 +109,16 @@ export default function ProfileView() {
 
             <div className="grid grid-cols-1 gap-2">
                 <label
-                    htmlFor="handle"
+                    htmlFor="imageFile"
                 >Imagen:</label>
                 <input
-                    id="image"
+                    id="imageFile"
                     type="file"
-                    name="handle"
                     className="border-none bg-slate-100 rounded-lg p-2"
                     accept="image/*"
-                    onChange={() => { }}
+                    onChange={setNewImage}
                 />
+                {errors.image && <ErrorMessage> {errors.image.message} </ErrorMessage>}
             </div>
 
             <input
