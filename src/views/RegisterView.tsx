@@ -4,9 +4,11 @@ import type { RegisterFormData } from "../types/forms";
 import FormErrorMessage from "../components/FormErrorMessage";
 
 export default function RegisterView() {
-  const { register, handleSubmit, formState: { isValid, errors } } = useForm<RegisterFormData>({
+  const { register, handleSubmit, watch, formState: { isValid, errors } } = useForm<RegisterFormData>({
     mode: "onBlur",
   });
+
+  const watchPassword = watch("password");  
 
   const onSubmit = (data: RegisterFormData) => {
     console.log(data);
@@ -99,7 +101,8 @@ export default function RegisterView() {
             className="bg-slate-100 border-none p-3 rounded-lg placeholder-slate-400"
             {...register("confirmPassword", {
               required: { value: true, message: "El password es requerido" },
-              minLength: { value: 8, message: "El password debe tener al menos 8 caracteres" }              
+              minLength: { value: 8, message: "El password debe tener al menos 8 caracteres" },
+              validate: (value) => value === watchPassword || "Contraseñas no coinciden"           
             })}
           />
           <div className="h-1">
