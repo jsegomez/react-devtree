@@ -1,17 +1,26 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import type { RegisterFormData } from "../types/forms";
+
 import FormErrorMessage from "../components/FormErrorMessage";
+import type { RegisterFormData } from "../types/forms";
+import api from "../utils/axios";
 
 export default function RegisterView() {
+  const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { isValid, errors } } = useForm<RegisterFormData>({
-    mode: "onBlur",
+    mode: "onTouched",
   });
 
   const watchPassword = watch("password");  
 
-  const onSubmit = (data: RegisterFormData) => {
-    console.log(data);
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      const response = await api.post("/auth/register", data);
+      console.log(response);
+      navigate("/auth/login");      
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -20,9 +29,9 @@ export default function RegisterView() {
 
       <form
         onSubmit={ handleSubmit(onSubmit) }
-        className="bg-white px-5 py-20 rounded-lg space-y-10 mt-10"
+        className="bg-white px-5 py-20 rounded-lg space-y-4 mt-10"
       >
-        <div className="grid grid-cols-1 space-y-3">
+        <div className="grid grid-cols-1 space-y-2">
           <label htmlFor="name" className="text-2xl text-slate-500">Nombre</label>
           <input
             id="name"
@@ -35,11 +44,28 @@ export default function RegisterView() {
               maxLength: { value: 60, message: "El nombre debe tener menos de 60 caracteres" }
             })}
           />
-          <div className="h-1">
+          <div className="h-4">
             { errors.name && <FormErrorMessage message={errors.name.message!} /> }
           </div>
         </div>
-        <div className="grid grid-cols-1 space-y-3">
+        <div className="grid grid-cols-1 space-y-2">
+          <label htmlFor="lastname" className="text-2xl text-slate-500">Apellidos</label>
+          <input
+            id="lastname"
+            type="text"
+            placeholder="Apellidos"
+            className={ `${errors.lastname ? "border-red-500" : "border-slate-300" } bg-slate-100 border-none p-3 rounded-lg placeholder-slate-400` }
+            {...register("lastname", {
+              required: { value: true, message: "El apellido es requerido" },
+              minLength: { value: 3, message: "El apellido debe tener al menos 3 caracteres" },
+              maxLength: { value: 60, message: "El apellido debe tener menos de 60 caracteres" }
+            })}
+          />
+          <div className="h-4">
+            { errors.lastname && <FormErrorMessage message={errors.lastname.message!} /> }
+          </div>
+        </div>
+        <div className="grid grid-cols-1 space-y-2">
           <label htmlFor="email" className="text-2xl text-slate-500">E-mail</label>
           <input
             id="email"
@@ -52,11 +78,11 @@ export default function RegisterView() {
              })
             }
           />
-          <div className="h-1">
+          <div className="h-4">
             { errors.email && <FormErrorMessage message={errors.email.message!} /> }
           </div>
         </div>
-        <div className="grid grid-cols-1 space-y-3">
+        <div className="grid grid-cols-1 space-y-2">
           <label htmlFor="username" className="text-2xl text-slate-500">Handle</label>
           <input
             id="username"
@@ -70,11 +96,11 @@ export default function RegisterView() {
                 maxLength: { value: 60, message: "El handle debe tener menos de 60 caracteres" }
               })}
           />
-          <div className="h-1">
+          <div className="h-4">
             { errors.username && <FormErrorMessage message={errors.username.message || "Campo requerido"} /> }
           </div>
         </div>
-        <div className="grid grid-cols-1 space-y-3">
+        <div className="grid grid-cols-1 space-y-2">
           <label htmlFor="password" className="text-2xl text-slate-500">Password</label>
           <input
             id="password"
@@ -92,7 +118,7 @@ export default function RegisterView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 space-y-3">
+        <div className="grid grid-cols-1 space-y-2">
           <label htmlFor="confirm_password" className="text-2xl text-slate-500">Repetir Password</label>
           <input
             id="confirm_password"
