@@ -1,4 +1,6 @@
 import { Outlet } from "react-router-dom";
+import { Toaster } from "sonner"
+
 
 export default function AuthLayout() {
   return (
@@ -10,6 +12,7 @@ export default function AuthLayout() {
         <div className="mt-10 max-w-2xl mx-auto">
           <Outlet />
         </div>
+        <Toaster />
     </div>
   )
 }

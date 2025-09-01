@@ -1,9 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import FormErrorMessage from "../components/FormErrorMessage";
 import type { RegisterFormData } from "../types/forms";
 import api from "../utils/axios";
+import { isAxiosError } from "axios";
+import { errorToast, successToast } from "../layouts/sonner-alert";
 
 export default function RegisterView() {
   const navigate = useNavigate();
@@ -15,11 +18,17 @@ export default function RegisterView() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const response = await api.post("/auth/register", data);
-      console.log(response);
-      navigate("/auth/login");      
-    } catch (error) {
-      console.log(error);
+      await api.post("/auth/register", data);            
+      toast("Usuario creado exitosamente", successToast);
+      navigate("/auth/login");
+    } catch (error) {      
+      if(isAxiosError(error)){
+        const statusCode = error.status;
+        if(statusCode === 409)toast.error("Usuario o email ya se encuentra registrado", errorToast);
+        if(statusCode === 400)toast.error("Los datos ingresados no son válidos", errorToast);
+      } else {
+        toast.error("Error al crear el usuario", errorToast);
+      }
     }
   }
 
