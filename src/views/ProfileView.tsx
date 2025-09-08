@@ -3,23 +3,29 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import FormErrorMessage from "../components/FormErrorMessage";
 import type { User } from "../types/user";
+import type { ProfileFormData } from "../types/forms";
 
 export default function ProfileView() {
     const queryClient = useQueryClient();
-    const data = queryClient.getQueryData(['data-user']);
-    console.log(data)
+    const userData: User = queryClient.getQueryData(['data-user'])!;
 
-    const { register, handleSubmit, formState: { isValid, errors } } = useForm<User>({
+    const { register, handleSubmit, formState: { isValid, errors } } = useForm<ProfileFormData>({
         mode: "onTouched",
         defaultValues: {
-            username: '',
-            description: '',
+            username: userData.username,
+            description: userData.description,
         },
     });
 
-    const onSubmit = (data: User) => {
+    const onSubmit = (data: ProfileFormData) => {
         const { username, description } = data;
-        console.log(username, description);
+        const updatedUser: User = {            
+            ...userData,
+            username,
+            description,
+        }
+
+        console.log(updatedUser)
     }
 
     return (

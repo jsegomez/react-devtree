@@ -1,3 +1,5 @@
+import type { User } from "./user";
+
 export interface RegisterFormData {
     name: string;
     lastname: string;
@@ -11,3 +13,5 @@ export interface LoginFormData {
     email: string;
     password: string;
 }
+
+export type ProfileFormData = Pick<User, 'username' | 'description'>
