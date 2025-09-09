@@ -11,3 +11,12 @@ export const getUser = async() => {
         toast.error("Error al obtener el usuario", errorToast);
     }
 }
+
+export const updateUser = async(user: User) => {
+    try {
+        const { data } = await api.patch<User>("/auth/update-user", user);
+        return data;
+    } catch (error) {                        
+        throw error;
+    }
+}

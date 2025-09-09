@@ -1,13 +1,32 @@
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { successToast, loadingToast, errorToast } from "../layouts/sonner-alert";
+import { updateUser } from "../api/DevTreeApi";
 import FormErrorMessage from "../components/FormErrorMessage";
-import type { User } from "../types/user";
 import type { ProfileFormData } from "../types/forms";
+import type { User } from "../types/user";
+import { useEffect } from "react";
+import { isAxiosError } from "axios";
 
 export default function ProfileView() {
     const queryClient = useQueryClient();
     const userData: User = queryClient.getQueryData(['data-user'])!;
+
+    const updateProfileMutation = useMutation({
+        mutationFn: updateUser,
+        onError: (error) => {
+            if(isAxiosError(error)) toast(error.response?.data.message as string, errorToast);
+            else toast("Error al actualizar el perfil " + error.message, errorToast);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['data-user'] });
+            toast("Perfil actualizado exitosamente", successToast);
+        }
+    });
+
+    const { isPending } = updateProfileMutation;
 
     const { register, handleSubmit, formState: { isValid, errors } } = useForm<ProfileFormData>({
         mode: "onTouched",
@@ -17,6 +36,10 @@ export default function ProfileView() {
         },
     });
 
+    useEffect(() => {
+        if(isPending) toast("Actualizando perfil", loadingToast);
+    }, [isPending]);    
+
     const onSubmit = (data: ProfileFormData) => {
         const { username, description } = data;
         const updatedUser: User = {            
@@ -25,7 +48,7 @@ export default function ProfileView() {
             description,
         }
 
-        console.log(updatedUser)
+        updateProfileMutation.mutate(updatedUser);
     }
 
     return (
@@ -65,7 +88,7 @@ export default function ProfileView() {
                     {...register("description", {
                         required: { value: true, message: "La descripción es requerida" },
                         minLength: { value: 3, message: "La descripción debe tener al menos 3 caracteres" },
-                        maxLength: { value: 60, message: "La descripción debe tener menos de 60 caracteres" }
+                        maxLength: { value: 100, message: "La descripción debe tener menos de 60 caracteres" }
                     })}
                 />
                 { errors.description && <FormErrorMessage message={errors.description.message as string} /> }

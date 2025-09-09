@@ -9,3 +9,8 @@ export const successToast: ExternalToast = {
     icon: "✅",
     position: "top-right",
 }
+
+export const loadingToast: ExternalToast = {
+    icon: "⏳",
+    position: "top-right",
+}

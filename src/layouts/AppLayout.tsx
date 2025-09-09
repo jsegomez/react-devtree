@@ -8,9 +8,9 @@ export default function AppLayout() {
         queryFn: () => getUser(),
         queryKey: ['data-user'],
         retry: 1,
-        refetchOnWindowFocus: true,        
+        refetchOnWindowFocus: false,        
     })
     
     if(isLoading) return <div>Loading...</div>
-    if(userData) return <Devtree userData={userData}/>
+    if(userData) return <Devtree userData={userData}/>    
 }

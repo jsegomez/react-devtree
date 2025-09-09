@@ -2,13 +2,13 @@ import { Link, Outlet } from "react-router-dom";
 
 import NavigationTabs from "./NavigationTabs";
 import type { User } from "../types/user";
+import { Toaster } from "sonner";
 
 type DevtreeProps = {
     userData: User;
 }
 
-export default function Devtree({ userData }: DevtreeProps) {
-    console.log(userData);
+export default function Devtree({ userData }: DevtreeProps) {    
     return (
         <div>
             <header className="bg-slate-800 py-5">
@@ -36,7 +36,7 @@ export default function Devtree({ userData }: DevtreeProps) {
                             to={''}
                             target="_blank"
                             rel="noreferrer noopener"
-                        >Visitar Mi Perfil</Link>
+                        >Visitar Mi Perfil/ {userData.username}</Link>
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-10 mt-10">
@@ -49,6 +49,7 @@ export default function Devtree({ userData }: DevtreeProps) {
                     </div>
                 </main>
             </div>
+            <Toaster />
         </div>
     )
 }
