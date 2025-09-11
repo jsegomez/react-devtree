@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import NavigationTabs from "./NavigationTabs";
 import type { User } from "../types/user";
@@ -9,6 +9,13 @@ type DevtreeProps = {
 }
 
 export default function Devtree({ userData }: DevtreeProps) {    
+    const navigate = useNavigate();
+
+    const closeSession = ()=>{
+        sessionStorage.removeItem('token');
+        navigate('/auth/login')
+    }
+
     return (
         <div>
             <header className="bg-slate-800 py-5">
@@ -19,7 +26,7 @@ export default function Devtree({ userData }: DevtreeProps) {
                     <div className="md:w-1/3 md:flex md:justify-end">
                         <button
                             className=" bg-lime-500 p-2 text-slate-800 uppercase font-black text-xs rounded-lg cursor-pointer"
-                            onClick={() => { }}
+                            onClick={ closeSession }
                         >
                             Cerrar Sesión
                         </button>

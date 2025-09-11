@@ -26,6 +26,7 @@ export default function LoginView() {
     } catch (error) {      
       if(isAxiosError(error)){
         const statusCode = error.status;
+        console.log(error.status)
         if(statusCode === 401)toast.error("Usuario o contraseña incorrectos", errorToast);
         if(statusCode === 404)toast.error("Usuario no encontrado", errorToast);
       } else {
