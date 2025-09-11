@@ -33,7 +33,7 @@ export default function Devtree({ userData }: DevtreeProps) {
                     </div>
                 </div>
             </header>
-            <div className="bg-gray-100  min-h-screen py-10 animate__animated animate__fadeIn animate__faster">
+            <div className="bg-gray-100 py-10 animate__animated animate__fadeIn animate__faster">
                 <main className="mx-auto max-w-5xl p-10 md:p-0">
                     <NavigationTabs />
 
@@ -50,8 +50,19 @@ export default function Devtree({ userData }: DevtreeProps) {
                         <div className="flex-1 ">
                             <Outlet />
                         </div>
-                        <div className="w-full md:w-96 bg-slate-800 px-5 py-10 space-y-6">
+                        <div className="w-full md:w-96 bg-slate-800 px-5 py-10 space-y-6 h-full rounded-lg">
 
+                            { userData.image && (
+                                <img 
+                                    src={userData.image} 
+                                    alt="Imagen de perfil" 
+                                    className="w-full h-full rounded-lg object-contain" 
+                                />
+                            ) }
+                            <div className="flex flex-col gap-2 text-center text-white">
+                                <p className="text-lg font-black">{ userData.username }</p>
+                                <p className="text-md font-medium">{ userData.description }</p>
+                            </div>
                         </div>
                     </div>
                 </main>

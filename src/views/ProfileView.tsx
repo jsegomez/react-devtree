@@ -3,16 +3,17 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { successToast, loadingToast, errorToast } from "../layouts/sonner-alert";
-import { updateUser } from "../api/DevTreeApi";
+import { updateUser, uploadImage } from "../api/DevTreeApi";
 import FormErrorMessage from "../components/FormErrorMessage";
 import type { ProfileFormData } from "../types/forms";
 import type { User } from "../types/user";
-import { useEffect } from "react";
+import { useEffect, useRef, type ChangeEvent } from "react";
 import { isAxiosError } from "axios";
 
 export default function ProfileView() {
     const queryClient = useQueryClient();
     const userData: User = queryClient.getQueryData(['data-user'])!;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateProfileMutation = useMutation({
         mutationFn: updateUser,
@@ -25,6 +26,33 @@ export default function ProfileView() {
             toast("Perfil actualizado exitosamente", successToast);
         }
     });
+
+    const updateImageMutation = useMutation({
+        mutationFn: uploadImage,
+        onSuccess: (data: User | undefined) => {
+            queryClient.setQueryData(['data-user'], (prevData: User) => {
+                return {
+                    ...prevData,
+                    image: data?.image
+                }
+            });
+            toast("Imagen actualizada exitosamente", successToast);
+            fileInputRef.current!.value = '';
+        },
+        onError: (error) => {
+            if(isAxiosError(error)) toast(error.response?.data.message as string, errorToast);
+            else toast("Error al actualizar la imagen " + error.message, errorToast);
+        }
+    });
+
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if(file?.type.includes("image")){
+            updateImageMutation.mutate(file);
+        }else{
+            toast('Eso no es una imagen', errorToast);
+        }
+    }   
 
     const { isPending } = updateProfileMutation;
 
@@ -102,7 +130,8 @@ export default function ProfileView() {
                     name="image"
                     className="border-none bg-slate-100 rounded-lg p-2"
                     accept="image/*"
-                    onChange={ () => {} }
+                    onChange={ handleImageChange }
+                    ref={ fileInputRef }
                 />
             </div>
 
