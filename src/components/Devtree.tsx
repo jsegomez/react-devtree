@@ -50,13 +50,14 @@ export default function Devtree({ userData }: DevtreeProps) {
                         <div className="flex-1 ">
                             <Outlet />
                         </div>
-                        <div className="w-full md:w-96 bg-slate-800 px-5 py-10 space-y-6 h-full rounded-lg">
+                        <div className="w-full md:w-96 bg-slate-800 px-5 py-10 space-y-6 rounded-lg">
 
                             { userData.image && (
                                 <img 
                                     src={userData.image} 
                                     alt="Imagen de perfil" 
-                                    className="w-full h-full rounded-lg object-contain" 
+                                    className="w-full h-80 rounded-lg object-contain" 
+                                    loading="lazy"
                                 />
                             ) }
                             <div className="flex flex-col gap-2 text-center text-white">
