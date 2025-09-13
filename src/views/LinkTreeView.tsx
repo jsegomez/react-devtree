@@ -1,29 +1,71 @@
-import { useState, type ChangeEvent } from "react"
+import { isAxiosError } from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { useEffect, useState, type ChangeEvent } from "react"
 import { social } from "../data/social"
 import type { SocialNetwork } from "../types/social-network";
 import DevtreeInput from "../components/DevtreeInput";
 import { isValidHttpsUrl } from "../utils/validate-url";
 import { toast } from "sonner";
-import { errorToast } from "../layouts/sonner-alert";
+import { errorToast, successToast } from "../layouts/sonner-alert";
+import { updateUser } from "../api/DevTreeApi";
+import type { User } from "../types/user";
 
 export default function LinkTreeView() {
-  const [ devtreeLinks, setDevtreeLinks ] = useState<SocialNetwork[]>(social);
+  const queryClient = useQueryClient();
+  const userData: User = queryClient.getQueryData(['data-user'])!;
+  const initialState = () => {    
+    if(userData.links) return JSON.parse(userData.links);
+    else return social;
+  }
+  
+  const [ devtreeLinks, setDevtreeLinks ] = useState<SocialNetwork[]>(initialState);
+  const [ isButtonDisabled, setIsButtonDisabled ] = useState<boolean>(false);
+
+  const updateUserMutation = useMutation({
+    mutationFn: updateUser,
+    onSuccess: () => {
+      toast("Links actualizados exitosamente", successToast);
+      queryClient.invalidateQueries({ queryKey: ['data-user'] });
+      setIsButtonDisabled(false);
+    },
+    onError: (error: Error) => {
+      if(isAxiosError(error)) toast(error.response?.data.message as string, errorToast);
+      else toast("Error al actualizar los links", errorToast);
+    }
+  });
+
   const handleUrlChange = (event: ChangeEvent<HTMLInputElement>) => {    
     const { name, value } = event.target;    
     const updatesLinks = devtreeLinks.map((link) => link.name === name ? { ...link, url: value } : link);
     setDevtreeLinks(updatesLinks);
   }
 
-  const handleEnabledChange = (newState: boolean, socialNetwork: string) => {  
-    const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');
+  const handleEnabledChange = (newState: boolean, socialNetwork: string) => {      
+    const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');        
     const isValidUrl = isValidHttpsUrl(targetLink?.url || '');
 
-    if(newState && isValidUrl){
+    if(isValidUrl){
       const updatesLinks = devtreeLinks.map((link) => link.name === socialNetwork ? { ...link, enabled: newState } : link);
       setDevtreeLinks(updatesLinks);
     }else{
       toast.error("La URL no es válida", errorToast);
     }
+  }
+
+  useEffect(() => {
+    const areAllLinksValid = devtreeLinks.every((link) => link.url === '' ? true : isValidHttpsUrl(link.url));
+    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) === JSON.stringify(devtreeLinks);
+
+    setIsButtonDisabled(areAllLinksValid && !isStateUnchanged);
+  }, [devtreeLinks, userData.links]);
+
+  const saveData = () => {
+    const updatedUser: User = {
+      ...userData,
+      links: JSON.stringify(devtreeLinks),
+    }
+    updateUserMutation.mutate(updatedUser);
   }
 
   return (
@@ -38,6 +80,12 @@ export default function LinkTreeView() {
           />
         ))
       }
+
+      <button
+        className="bg-cyan-400 p-2 text-lg w-full uppercase text-slate-600 rounded font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled={!isButtonDisabled}
+        onClick={ saveData }
+      >Guardar cambios</button>
     </div>
   )
 }

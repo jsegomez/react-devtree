@@ -5,6 +5,7 @@ export interface User {
     username:  string;
     description: string;
     image:     string;
+    links:     string;
     email:     string;
     createdAt: Date;
     updatedAt: Date;    
