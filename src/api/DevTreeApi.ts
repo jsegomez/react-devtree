@@ -14,17 +14,18 @@ export const getUser = async() => {
     }
 }
 
-export const updateUser = async(user: User):Promise<User | undefined> => {
+export const updateUser = async(user: User):Promise<User> => {
     try {
         const { data } = await api.patch<User>("/auth/update-user", user);
         return data;
     } catch (error) {                        
         if(isAxiosError(error)) toast.error(error.response?.data.message as string, errorToast);
         toast.error("Error al actualizar el usuario", errorToast);
+        throw error;
     }
 }
 
-export const uploadImage = async(image: File):Promise<User | undefined> => {
+export const uploadImage = async(image: File):Promise<User> => {
     try {
         const formData = new FormData();
         formData.append('image', image);
@@ -34,8 +35,10 @@ export const uploadImage = async(image: File):Promise<User | undefined> => {
     } catch (error) {
         if(isAxiosError(error)) {
             toast.error(error.response?.data.message as string, errorToast);
+            throw error;
         } else {
             toast.error("Error al actualizar la imagen", errorToast);
+            throw error;
         }
     }
 }

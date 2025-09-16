@@ -22,7 +22,7 @@ export default function LinkTreeView() {
   const [ devtreeLinks, setDevtreeLinks ] = useState<SocialNetwork[]>(initialState);
   const [ isButtonDisabled, setIsButtonDisabled ] = useState<boolean>(false);
 
-  const updateUserMutation = useMutation({
+  const { isPending, mutate: updateUserMutation } = useMutation({
     mutationFn: updateUser,
     onSuccess: () => {
       toast("Links actualizados exitosamente", successToast);
@@ -32,7 +32,7 @@ export default function LinkTreeView() {
     onError: (error: Error) => {
       if(isAxiosError(error)) toast(error.response?.data.message as string, errorToast);
       else toast("Error al actualizar los links", errorToast);
-    }
+    },
   });
 
   const handleUrlChange = (event: ChangeEvent<HTMLInputElement>) => {    
@@ -41,7 +41,7 @@ export default function LinkTreeView() {
     setDevtreeLinks(updatesLinks);
   }
 
-  const handleEnabledChange = (newState: boolean, socialNetwork: string) => {      
+  const updateButtonState = (newState: boolean, socialNetwork: string) => {      
     const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');        
     const isValidUrl = isValidHttpsUrl(targetLink?.url || '');
 
@@ -53,20 +53,20 @@ export default function LinkTreeView() {
     }
   }
 
-  useEffect(() => {
-    const areAllLinksValid = devtreeLinks.every((link) => link.url === '' ? true : isValidHttpsUrl(link.url));
-    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) === JSON.stringify(devtreeLinks);
-
-    setIsButtonDisabled(areAllLinksValid && !isStateUnchanged);
-  }, [devtreeLinks, userData.links]);
-
-  const saveData = () => {
+  const sendUserProfileUpdate = () => {
     const updatedUser: User = {
       ...userData,
       links: JSON.stringify(devtreeLinks),
     }
-    updateUserMutation.mutate(updatedUser);
+    updateUserMutation(updatedUser);
   }
+
+  useEffect(() => {
+    const areAllLinksValid = devtreeLinks.every((link) => link.url === '' ? true : isValidHttpsUrl(link.url));
+    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) == JSON.stringify(devtreeLinks);
+    
+    setIsButtonDisabled(areAllLinksValid && !isStateUnchanged);
+  }, [devtreeLinks, userData.links]);
 
   return (
     <div className="space-y-5">
@@ -76,15 +76,15 @@ export default function LinkTreeView() {
             key={link.name}
             devtreeLinks={link}
             handleUrlChange={handleUrlChange}
-            handleEnabledChange={handleEnabledChange}
+            handleEnabledChange={updateButtonState}
           />
         ))
       }
 
       <button
         className="bg-cyan-400 p-2 text-lg w-full uppercase text-slate-600 rounded font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={!isButtonDisabled}
-        onClick={ saveData }
+        disabled={ isPending || !isButtonDisabled }
+        onClick={ sendUserProfileUpdate }
       >Guardar cambios</button>
     </div>
   )
