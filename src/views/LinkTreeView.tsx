@@ -45,6 +45,8 @@ export default function LinkTreeView() {
     const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');        
     const isValidUrl = isValidHttpsUrl(targetLink?.url || '');
 
+    console.log(socialNetwork); // TODO: Remove this
+
     if(isValidUrl){
       const updatesLinks = devtreeLinks.map((link) => link.name === socialNetwork ? { ...link, enabled: newState } : link);
       setDevtreeLinks(updatesLinks);
