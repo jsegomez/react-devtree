@@ -14,8 +14,8 @@ import type { User } from "../types/user";
 export default function LinkTreeView() {
   const queryClient = useQueryClient();
   const userData: User = queryClient.getQueryData(['data-user'])!;
-  const initialState = () => {    
-    if(userData.links) return JSON.parse(userData.links);
+  const initialState = () => {       
+    if(userData.links && userData.links != '[]') return JSON.parse(userData.links);
     else return social;
   }
   
@@ -41,17 +41,24 @@ export default function LinkTreeView() {
     setDevtreeLinks(updatesLinks);
   }
 
-  const updateButtonState = (newState: boolean, socialNetwork: string) => {      
+  const updateButtonState = (isEnablingSocialNetwork: boolean, socialNetwork: string) => {      
     const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');        
-    const isValidUrl = isValidHttpsUrl(targetLink?.url || '');
+    const isValidUrl = isValidHttpsUrl(targetLink?.url || '');    
 
-    console.log(socialNetwork); // TODO: Remove this
-
-    if(isValidUrl){
-      const updatesLinks = devtreeLinks.map((link) => link.name === socialNetwork ? { ...link, enabled: newState } : link);
-      setDevtreeLinks(updatesLinks);
+    if(isValidUrl && targetLink){
+      const result =modifiedLinks(targetLink, isEnablingSocialNetwork);
+      setDevtreeLinks(result);      
     }else{
       toast.error("La URL no es válida", errorToast);
+    }
+  }
+
+  const modifiedLinks = (targetLink: SocialNetwork, isEnablingSocialNetwork: boolean):SocialNetwork[] => {
+    if(isEnablingSocialNetwork){
+      const position = devtreeLinks.filter((link)=> link.enabled).length + 1;
+      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, position, enabled: true } : link);      
+    }else{      
+      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, position: null, enabled: false } : link);      
     }
   }
 
@@ -65,7 +72,7 @@ export default function LinkTreeView() {
 
   useEffect(() => {
     const areAllLinksValid = devtreeLinks.every((link) => link.url === '' ? true : isValidHttpsUrl(link.url));
-    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) == JSON.stringify(devtreeLinks);
+    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) == JSON.stringify(devtreeLinks);    
     
     setIsButtonDisabled(areAllLinksValid && !isStateUnchanged);
   }, [devtreeLinks, userData.links]);

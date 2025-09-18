@@ -16,8 +16,11 @@ export default function Devtree({ userData }: DevtreeProps) {
     const [activeLinks, setActiveLinks] = useState<SocialNetwork[]>([]);
 
     useEffect(() => {
-        const socialLinks = JSON.parse(userData.links) as SocialNetwork[];        
-        setActiveLinks(socialLinks.filter((link) => link.enabled));
+        const socialLinks = JSON.parse(userData.links) as SocialNetwork[];
+        const links =socialLinks.filter((link) => link.enabled);
+        const sortedLinks = links.sort((a, b) => a.position! - b.position!);           
+    
+        setActiveLinks(sortedLinks);
     }, [userData.links]);
 
 

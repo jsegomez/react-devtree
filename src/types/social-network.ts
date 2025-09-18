@@ -3,4 +3,5 @@ export type SocialNetwork = {
     name: string;
     url: string;
     enabled: boolean;
+    position: number | null;
 }
