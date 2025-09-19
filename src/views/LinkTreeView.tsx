@@ -55,10 +55,14 @@ export default function LinkTreeView() {
 
   const modifiedLinks = (targetLink: SocialNetwork, isEnablingSocialNetwork: boolean):SocialNetwork[] => {
     if(isEnablingSocialNetwork){
-      const position = devtreeLinks.filter((link)=> link.enabled).length + 1;
-      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, position, enabled: true } : link);      
-    }else{      
-      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, position: null, enabled: false } : link);      
+      const activeLinks = devtreeLinks.filter((link)=> link.enabled);
+      let position = 0;
+      if(activeLinks.length > 0) position = Math.max(...activeLinks.map(item => item.id)) + 1;
+      else position = 1;
+
+      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, id: position, enabled: true } : link);      
+    }else{            
+      return devtreeLinks.map((link) => link.name === targetLink.name ? { ...link, id: 0, enabled: false } : link);      
     }
   }
 

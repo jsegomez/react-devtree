@@ -1,7 +1,6 @@
-export type SocialNetwork = {
-    id?: string;
+export type SocialNetwork = {    
+    id: number;
     name: string;
     url: string;
     enabled: boolean;
-    position: number | null;
 }
