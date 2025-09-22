@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { DragEndEvent } from '@dnd-kit/core';
 
 import NavigationTabs from "./NavigationTabs";
@@ -10,6 +10,7 @@ import { Toaster } from "sonner";
 import type { SocialNetwork } from "../types/social-network";
 import { useEffect, useState } from "react";
 import DevtreeLink from "./DevtreeLink";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DevtreeProps = {
     userData: User;
@@ -18,15 +19,42 @@ type DevtreeProps = {
 export default function Devtree({ userData }: DevtreeProps) {
     const navigate = useNavigate();
     const [activeLinks, setActiveLinks] = useState<SocialNetwork[]>([]);
+    const [disabledLinks, setDisabledLinks] = useState<SocialNetwork[]>([]);
+    const queryClient = useQueryClient();
 
-    const handleDragEnd = () => { }
+    const handleDragEnd = (event: DragEndEvent) => {
+        const over = event.over
+        if (over) {
+            const prevIndex = activeLinks.findIndex(link => link.id == event.active.id);
+            const newIndex = activeLinks.findIndex(link => link.id === over.id);
+            const order = arrayMove(activeLinks, prevIndex, newIndex)
+            setActiveLinks(order);
+            throwMutate()
+        }
+    }
+
+    const throwMutate = () => {        
+        const udpatedLinks = JSON.stringify([...activeLinks, ...disabledLinks]);         
+        console.log(udpatedLinks)
+        
+        setTimeout(() => {
+            queryClient.setQueryData(['data-user'], (prevData: User) => {
+                return {
+                    ...prevData,
+                    links: udpatedLinks
+                }
+            });
+        }, 0);
+    }
 
     useEffect(() => {
         const socialLinks = JSON.parse(userData.links) as SocialNetwork[];
-        const links = socialLinks.filter((link) => link.enabled);
-        const sortedLinks = links.sort((a, b) => a.id - b.id);
+        const activeLinks = socialLinks.filter((link) => link.enabled);        
+        const disabledLinks = socialLinks.filter((link) => !link.enabled);
+        const sortedActiveLinks = activeLinks.sort((a, b) => a.id - b.id);
 
-        setActiveLinks(sortedLinks);
+        setActiveLinks(sortedActiveLinks);
+        setDisabledLinks(disabledLinks);
     }, [userData.links]);
 
 
@@ -34,6 +62,7 @@ export default function Devtree({ userData }: DevtreeProps) {
         sessionStorage.removeItem('token');
         navigate('/auth/login')
     }
+
 
     return (
         <div>
@@ -98,7 +127,6 @@ export default function Devtree({ userData }: DevtreeProps) {
                                                 ))
                                             }
                                         </SortableContext>
-
                                     </div>
                                 </DndContext>
                             </div>
