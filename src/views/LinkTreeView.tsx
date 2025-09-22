@@ -41,12 +41,12 @@ export default function LinkTreeView() {
     setDevtreeLinks(updatesLinks);
   }
 
-  const updateButtonState = (isEnablingSocialNetwork: boolean, socialNetwork: string) => {      
+  const updateButtonState = (isEnablingSocialNetwork: boolean, socialNetwork: string) => {          
     const targetLink = devtreeLinks.find((link)=> link.name == socialNetwork ? link.url : '');        
     const isValidUrl = isValidHttpsUrl(targetLink?.url || '');    
 
     if(isValidUrl && targetLink){
-      const result =modifiedLinks(targetLink, isEnablingSocialNetwork);
+      const result = modifiedLinks(targetLink, isEnablingSocialNetwork);
       setDevtreeLinks(result);      
     }else{
       toast.error("La URL no es válida", errorToast);
@@ -76,7 +76,7 @@ export default function LinkTreeView() {
 
   useEffect(() => {
     const areAllLinksValid = devtreeLinks.every((link) => link.url === '' ? true : isValidHttpsUrl(link.url));
-    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) == JSON.stringify(devtreeLinks);    
+    const isStateUnchanged = JSON.stringify(JSON.parse(userData.links)) == JSON.stringify(devtreeLinks);        
     
     setIsButtonDisabled(areAllLinksValid && !isStateUnchanged);
   }, [devtreeLinks, userData.links]);

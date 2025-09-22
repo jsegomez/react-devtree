@@ -6,11 +6,15 @@ import type { DragEndEvent } from '@dnd-kit/core';
 
 import NavigationTabs from "./NavigationTabs";
 import type { User } from "../types/user";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import type { SocialNetwork } from "../types/social-network";
 import { useEffect, useState } from "react";
 import DevtreeLink from "./DevtreeLink";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUser } from "../api/DevTreeApi";
+import { errorToast, successToast } from "../layouts/sonner-alert";
+import { isAxiosError } from "axios";
+
 
 type DevtreeProps = {
     userData: User;
@@ -21,40 +25,55 @@ export default function Devtree({ userData }: DevtreeProps) {
     const [activeLinks, setActiveLinks] = useState<SocialNetwork[]>([]);
     const [disabledLinks, setDisabledLinks] = useState<SocialNetwork[]>([]);
     const queryClient = useQueryClient();
+    const [isPendingSave, setIsPendingSave] = useState<boolean>(false);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const over = event.over
         if (over) {
             const prevIndex = activeLinks.findIndex(link => link.id == event.active.id);
             const newIndex = activeLinks.findIndex(link => link.id === over.id);
-            const order = arrayMove(activeLinks, prevIndex, newIndex)
-            setActiveLinks(order);
-            throwMutate()
+            const order = arrayMove(activeLinks, prevIndex, newIndex);
+            const sortedActiveLinks =order.map((link, index) => ({
+                ...link,
+                id: index
+            }));
+            setActiveLinks(sortedActiveLinks);
+            setIsPendingSave(true);            
         }
     }
 
-    const throwMutate = () => {        
-        const udpatedLinks = JSON.stringify([...activeLinks, ...disabledLinks]);         
-        console.log(udpatedLinks)
-        
-        setTimeout(() => {
-            queryClient.setQueryData(['data-user'], (prevData: User) => {
-                return {
-                    ...prevData,
-                    links: udpatedLinks
-                }
-            });
-        }, 0);
+    const throwMutate = () => {                
+        const udpatedLinks = JSON.stringify([...activeLinks, ...disabledLinks]);
+        setIsPendingSave(false);
+    
+        queryClient.setQueryData(['data-user'], (prevData: User) => {
+            return {
+                ...prevData,
+                links: udpatedLinks
+            }
+        }); 
+
+        updateUserMutation(queryClient.getQueryData(['data-user'])!)
     }
 
-    useEffect(() => {
-        const socialLinks = JSON.parse(userData.links) as SocialNetwork[];
-        const activeLinks = socialLinks.filter((link) => link.enabled);        
-        const disabledLinks = socialLinks.filter((link) => !link.enabled);
-        const sortedActiveLinks = activeLinks.sort((a, b) => a.id - b.id);
+    const { mutate: updateUserMutation } = useMutation({
+            mutationFn: updateUser,
+            onSuccess: () => {
+            toast("Links actualizados exitosamente", successToast);
+            queryClient.invalidateQueries({ queryKey: ['data-user'] });
+        },
+        onError: (error: Error) => {
+        if(isAxiosError(error)) toast(error.response?.data.message as string, errorToast);
+        else toast("Error al actualizar los links", errorToast);
+        },
+    });
 
-        setActiveLinks(sortedActiveLinks);
-        setDisabledLinks(disabledLinks);
+    useEffect(() => {
+        const parsedLinks = JSON.parse(userData.links) as SocialNetwork[];        
+
+        setActiveLinks(parsedLinks.filter((link) => link.enabled).sort((a, b) => a.id - b.id));
+        setDisabledLinks(parsedLinks.filter((link) => !link.enabled));
+        setIsPendingSave(false);
     }, [userData.links]);
 
 
@@ -62,7 +81,6 @@ export default function Devtree({ userData }: DevtreeProps) {
         sessionStorage.removeItem('token');
         navigate('/auth/login')
     }
-
 
     return (
         <div>
@@ -129,6 +147,14 @@ export default function Devtree({ userData }: DevtreeProps) {
                                         </SortableContext>
                                     </div>
                                 </DndContext>
+
+                                {
+                                    isPendingSave && (
+                                        <button className="bg-cyan-400 p-2 font-bold mt-2" onClick={throwMutate}>
+                                            Guardar cambios
+                                        </button>
+                                    )
+                                }
                             </div>
                         </div>
                     </div>
