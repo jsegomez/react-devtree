@@ -1,7 +1,7 @@
 import api from "../utils/axios";
 import { toast } from "sonner";
 import { errorToast } from "../layouts/sonner-alert";
-import type { User } from "../types/user";
+import type { PublicUser, User } from "../types/user";
 import { isAxiosError } from "axios";
 
 export const getUser = async() => {
@@ -43,3 +43,17 @@ export const uploadImage = async(image: File):Promise<User> => {
     }
 }
 
+export const getPublicUser = async(username: string):Promise<PublicUser> => {
+    try {
+        const { data } = await api.get<PublicUser>(`/public/${username}`);
+        return data;
+    } catch (error) {
+        if(isAxiosError(error)) {
+            toast.error(error.response?.data.message as string, errorToast);
+            throw error;
+        } else {
+            toast.error("Error al obtener el usuario público", errorToast);
+            throw error;
+        }
+    }
+}

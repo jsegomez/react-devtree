@@ -106,7 +106,7 @@ export default function Devtree({ userData }: DevtreeProps) {
                     <div className="flex justify-end">
                         <Link
                             className="font-bold text-right text-slate-800 text-2xl"
-                            to={''}
+                            to={`/public/${userData.username}`}
                             target="_blank"
                             rel="noreferrer noopener"
                         >Visitar Mi Perfil/ {userData.username}</Link>

@@ -10,3 +10,7 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;    
 }
+
+export interface PublicUser extends Omit<User, '_id' | 'createdAt' | 'updatedAt'> {
+    [key: string]: string; // Interface extends Omit to create public user type
+}
